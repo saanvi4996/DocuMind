@@ -97,14 +97,3 @@ streamlit run app.py
 
 
 ---
-
-## Deployment
-
-1. Push to GitHub (confirm `.env` is in `.gitignore`)
-2. Go to [share.streamlit.io](https://share.streamlit.io)
-3. Connect your repo
-4. Set main file path to `DocuMind/app.py`
-5. Add `GOOGLE_API_KEY` under **Secrets**
-6. Click Deploy
-
----
