@@ -1,0 +1,29 @@
+# Environment
+.env
+.env.local
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+.venv/
+
+# Streamlit
+.streamlit/
+
+# FAISS index (rebuild on deploy)
+vectorstore/
+
+# Temp files
+data/*.pdf
+*.tmp
+
+# IDE
+.vscode/
+.idea/
+*.swp
