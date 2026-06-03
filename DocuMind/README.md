@@ -19,13 +19,13 @@ Upload your PDFs and ask questions — answers are grounded in your documents, n
 
 ## How it works
 Upload PDF(s)
-↓
+→
 Extract text (PyPDF) → Chunk (RecursiveCharacterTextSplitter)
-↓
+→
 Embed chunks (Gemini gemini-embedding-001) → Store in FAISS
-↓
+→
 User query → Retrieve top-k relevant chunks
-↓
+→
 Gemini 2.0 Flash generates a grounded answer with citations
 
 ---
