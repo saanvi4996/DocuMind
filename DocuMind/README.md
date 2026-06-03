@@ -135,6 +135,3 @@ DocuMind/
 
 ---
 
-## Resume Bullet
-
-> Developed DocuMind, a full-stack AI research assistant using LangChain, Google Gemini API, FAISS, and Streamlit with Retrieval-Augmented Generation (RAG) for conversational querying, summarisation, semantic retrieval, and citation across research papers.
