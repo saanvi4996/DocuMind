@@ -52,7 +52,9 @@ def format_citations(source_docs: List[Document]) -> List[Tuple[str, int]]:
 
     for doc in source_docs:
         source = doc.metadata.get("source", "Unknown")
-        page = doc.metadata.get("page", 0) + 1  # Convert 0-indexed to 1-indexed
+        page = doc.metadata.get("page")
+        # Convert 0-indexed to 1-indexed; 0 marks a chunk with no page number
+        page = page + 1 if isinstance(page, int) else 0
 
         # Use just the filename, not the full temp path
         filename = os.path.basename(source)
@@ -62,27 +64,16 @@ def format_citations(source_docs: List[Document]) -> List[Tuple[str, int]]:
             seen.add(key)
             citations.append(key)
 
-    citations.sort(key=lambda x: x[1])
+    citations.sort()
     return citations
 
 
 def display_citations(source_docs: list) -> None:
     """Render source citations in Streamlit."""
-    import streamlit as st
-    import os
+    citations = format_citations(source_docs)
 
-    seen = set()
-    lines = []
-    for doc in source_docs:
-        source = doc.metadata.get("source", "Unknown")
-        page = doc.metadata.get("page", "?")
-        filename = os.path.basename(source)
-        key = (filename, page)
-        if key not in seen:
-            seen.add(key)
-            lines.append(f"📄 **{filename}** — Page {int(page) + 1}")
-
-    if lines:
+    if citations:
         with st.expander("📚 Sources", expanded=False):
-            for line in lines:
-                st.markdown(line)
+            for filename, page in citations:
+                page_label = f" — Page {page}" if page else ""
+                st.markdown(f"📄 **{filename}**{page_label}")

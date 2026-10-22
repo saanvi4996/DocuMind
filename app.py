@@ -11,6 +11,9 @@ from utils.helpers import save_uploaded_file, cleanup_temp_files, display_citati
 
 load_dotenv()
 
+# Summarise/Compare need a wider view of the papers than a single question.
+BULK_K = 12
+
 st.set_page_config(page_title="DocuMind", page_icon="🧠", layout="wide")
 st.title("🧠 DocuMind")
 st.caption("Chat with research papers using Retrieval-Augmented Generation (RAG)")
@@ -21,6 +24,8 @@ if "qa_chain" not in st.session_state:
     st.session_state.qa_chain = None
 if "retriever" not in st.session_state:
     st.session_state.retriever = None
+if "vectorstore" not in st.session_state:
+    st.session_state.vectorstore = None
 if "docs_loaded" not in st.session_state:
     st.session_state.docs_loaded = False
 if "temp_paths" not in st.session_state:
@@ -63,6 +68,7 @@ if process_btn and uploaded_files:
             retriever = get_retriever(vectorstore)
             qa_chain = create_qa_chain(retriever)
 
+            st.session_state.vectorstore = vectorstore
             st.session_state.retriever = retriever
             st.session_state.qa_chain = qa_chain
             st.session_state.docs_loaded = True
@@ -77,8 +83,11 @@ if process_btn and uploaded_files:
         finally:
             cleanup_temp_files(temp_paths)
 
-for role, message in st.session_state.chat_history:
-    st.chat_message(role).write(message)
+for role, message, sources in st.session_state.chat_history:
+    with st.chat_message(role):
+        st.write(message)
+        if sources:
+            display_citations(sources)
 
 if st.session_state.docs_loaded:
     user_question = st.chat_input("Ask a question about your papers…")
@@ -87,7 +96,7 @@ else:
 
 if user_question and st.session_state.qa_chain:
     st.chat_message("user").write(user_question)
-    st.session_state.chat_history.append(("user", user_question))
+    st.session_state.chat_history.append(("user", user_question, []))
 
     with st.spinner("Thinking…"):
         try:
@@ -98,10 +107,11 @@ if user_question and st.session_state.qa_chain:
             answer = f"An error occurred: {e}"
             source_docs = []
 
-    st.chat_message("assistant").write(answer)
-    st.session_state.chat_history.append(("assistant", answer))
-    if source_docs:
-        display_citations(source_docs)
+    with st.chat_message("assistant"):
+        st.write(answer)
+        if source_docs:
+            display_citations(source_docs)
+    st.session_state.chat_history.append(("assistant", answer, source_docs))
 
 if summarise_btn:
     if not st.session_state.docs_loaded:
@@ -109,7 +119,7 @@ if summarise_btn:
     else:
         with st.spinner("Generating summary…"):
             try:
-                chain = create_qa_chain(st.session_state.retriever, prompt_template=SUMMARY_PROMPT_TEMPLATE)
+                chain = create_qa_chain(get_retriever(st.session_state.vectorstore, k=BULK_K), prompt_template=SUMMARY_PROMPT_TEMPLATE)
                 result = chain.invoke({"query": "Provide a detailed structured summary of all uploaded research papers."})
                 summary = result.get("result", "No summary generated.")
                 source_docs = result.get("source_documents", [])
@@ -126,7 +136,7 @@ if compare_btn:
     else:
         with st.spinner("Comparing papers…"):
             try:
-                chain = create_qa_chain(st.session_state.retriever, prompt_template=COMPARISON_PROMPT_TEMPLATE)
+                chain = create_qa_chain(get_retriever(st.session_state.vectorstore, k=BULK_K), prompt_template=COMPARISON_PROMPT_TEMPLATE)
                 result = chain.invoke({"query": "Compare all uploaded research papers across objectives, methodology, datasets, results, and conclusions."})
                 comparison = result.get("result", "No comparison generated.")
                 source_docs = result.get("source_documents", [])
