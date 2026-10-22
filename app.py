@@ -38,13 +38,13 @@ with st.sidebar:
         type="pdf",
         accept_multiple_files=True,
     )
-    process_btn = st.button("⚙️ Process PDFs", use_container_width=True)
+    process_btn = st.button("⚙️ Process PDFs", width="stretch")
     st.divider()
     st.header("🛠️ Tools")
-    summarise_btn = st.button("📝 Summarise Papers", use_container_width=True)
-    compare_btn = st.button("⚖️ Compare Papers", use_container_width=True)
+    summarise_btn = st.button("📝 Summarise Papers", width="stretch")
+    compare_btn = st.button("⚖️ Compare Papers", width="stretch")
     st.divider()
-    if st.button("🗑️ Clear Chat", use_container_width=True):
+    if st.button("🗑️ Clear Chat", width="stretch"):
         st.session_state.chat_history = []
         st.rerun()
 
